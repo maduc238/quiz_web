@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{# read_only được truyền từ route preview; mặc định là False #}
+{% set read_only = read_only|default(false) %}
+
+{% block head %}
+  {% if not read_only %}
+    <script src="{{ url_for('static', filename='timer.js') }}"></script>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<h2>{{ exam.title }}</h2>
+
+{% if not read_only %}
+  <div id="timer" class="alert alert-info"></div>
+{% endif %}
+
+<form id="examForm" method="POST"
+      {% if not read_only %}
+        action="{{ url_for('student.submit_exam', exam_id=exam.id) }}"
+      {% else %}
+        action="#"
+      {% endif %}>
+
+  {% for q in exam.questions %}
+    <div class="mb-4">
+      <p><strong>{{ loop.index }}.</strong></p>
+
+      <!-- Markdown + MathJax -->
+      <div>{{ q.text|md|safe }}</div>
+
+      {% if q.image_path %}
+        <img src="{{ url_for('static', filename=q.image_path) }}"
+             style="max-width:400px">
+      {% endif %}
+
+      {% for opt in q.options %}
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="radio"
+                 name="question_{{ q.id }}" value="{{ opt.id }}"
+                 {% if read_only %}disabled{% else %}required{% endif %}>
+          <label class="form-check-label">
+            {{ opt.text|md|safe }}
+            {% if opt.image_path %}
+              <br><img src="{{ url_for('static', filename=opt.image_path) }}"
+                       style="max-width:300px">
+            {% endif %}
+          </label>
+        </div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+
+  {% if not read_only %}
+    <button class="btn btn-success" type="submit">Submit</button>
+  {% endif %}
+</form>
+{% endblock %}
+
+{% block scripts %}
+{% if not read_only %}
+<script>
+  /* -------- TIMER: tự nộp khi hết giờ -------- */
+  startTimer(
+    {{ exam.duration_minutes }} * 60,
+    document.getElementById('timer'),
+    document.getElementById('examForm')
+  );
+
+  /* ----- chặn Back / Reload / đóng tab ----- */
+  history.pushState(null, '', location.href);
+  window.addEventListener('popstate', sendAbort,   { once:true });
+  window.addEventListener('beforeunload', sendAbort, { once:true });
+
+  function sendAbort() {
+    if (window.__submitted__) return;           // đã nộp hợp lệ
+    navigator.sendBeacon(
+      "{{ url_for('student.abort_exam', exam_id=exam.id) }}",
+      ""
+    );
+  }
+
+  document.getElementById('examForm')
+          .addEventListener('submit', () => window.__submitted__ = true);
+</script>
+{% endif %}
+{% endblock %}

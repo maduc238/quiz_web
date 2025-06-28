@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Available Exams</h2>
+<table class="table">
+  <thead><tr><th>#</th><th>Title</th><th>Duration (minutes)</th><th>Attempts left</th><th>Best score</th><th></th></tr></thead>
+  <tbody>
+  {% for exam in exams %}
+    {% set left = attempts[exam.id] %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ exam.title }}</td>
+      <td>{{ exam.duration_minutes }}</td>
+      <td>
+        {% if left is none %}&infin;
+        {% else %}{{ left }}{% endif %}
+      </td>
+      <td>{{ best[exam.id] }}</td>
+      <td>
+        <form method="GET" action="{{ url_for('student.start_exam', exam_id=exam.id) }}"
+              onsubmit="return confirm('Begin the test? You won’t be able to go back.');">
+          <button class="btn btn-success btn-sm"
+                  {% if left == 0 %}disabled{% endif %}>Take Exam</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

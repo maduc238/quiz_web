@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="text-center">
+  <h2>Your Score</h2>
+  <p class="display-4">{{ score }} / 100</p>
+  <p>Correct answers: {{ score * total // 100 }}/{{ total }}</p>
+  <a class="btn btn-primary" href="{{ url_for('student.index') }}">Back to exams</a>
+</div>
+{% endblock %}

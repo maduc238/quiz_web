@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ "Edit Exam" if exam else "Create New Exam" }}</h2>
+
+<!-- ========== FORM 1: EXAM INFO ========== -->
+<form method="POST" action="{{ url_for('admin.new_exam' if exam is none else 'admin.edit_exam', exam_id=exam.id if exam else None) }}" class="mb-4">
+
+  <div class="mb-3">
+    <label class="form-label">Title</label>
+    <input class="form-control" type="text"
+           name="title" value="{{ exam.title if exam else '' }}" required>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Duration (minutes)</label>
+    <input class="form-control" type="number" min="1"
+           name="duration"
+           value="{{ exam.duration_minutes if exam else 30 }}" required>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Max attempts (0 = unlimited)</label>
+    <input class="form-control" type="number" min="0"
+           name="max_attempts"
+           value="{{ exam.max_attempts if exam else 1 }}" required>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Class</label>
+    <select class="form-select" name="class_id" required>
+      <option value="">-- choose --</option>
+      {% for c in classes %}
+        <option value="{{ c.id }}"
+          {% if exam and exam.class_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <button class="btn btn-success" type="submit">Save</button>
+  <a class="btn btn-secondary" href="{{ url_for('admin.dashboard') }}">Back</a>
+  <a class="btn btn-info ms-2"
+   href="{{ url_for('admin.preview_exam', exam_id=exam.id) }}"
+   target="_blank">Preview</a>
+</form>
+
+{% if exam %}
+<!-- ========== FORM 2: ADD QUESTION ========== -->
+<hr>
+<h3>Add Question</h3>
+<form method="POST" enctype="multipart/form-data"
+      action="{{ url_for('admin.add_question', exam_id=exam.id) }}">
+
+  <div class="mb-3">
+    <label class="form-label">Question text</label>
+    <textarea class="form-control" name="question_text"></textarea>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Question image (optional)</label>
+    <input type="file" class="form-control" name="question_image" accept="image/*">
+  </div>
+
+  {% for i in range(1,5) %}
+    <div class="mb-3">
+      <label class="form-label">Option {{ i }}</label>
+      <input class="form-control mb-1" type="text" name="option_{{ i }}">
+      <input type="file" class="form-control" name="option_{{ i }}_image" accept="image/*">
+    </div>
+  {% endfor %}
+
+  <div class="mb-3">
+    <label class="form-label">Correct option (1-4)</label>
+    <input class="form-control" type="number" min="1" max="4" name="correct" required>
+  </div>
+
+  <button class="btn btn-primary">Add Question</button>
+</form>
+
+<!-- ========== EXISTING QUESTIONS ========== -->
+<hr>
+<h4 class="mt-4">Existing Questions</h4>
+<ul class="list-group">
+  {% for q in exam.questions|sort(attribute='order_idx') %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <span class="flex-grow-1">
+        {{ loop.index }}. {{ q.text or "[img]" }}
+        {% if q.image_path %}
+          <img src="{{ url_for('static', filename=q.image_path) }}"
+               style="max-height:40px" class="ms-2">
+        {% endif %}
+        ({{ q.options|length }} options)
+      </span>
+
+      <span class="btn-group">
+        <!-- Up -->
+        <form method="POST" action="{{ url_for('admin.move_question', q_id=q.id, direction='up') }}">
+          <button class="btn btn-sm btn-outline-secondary"
+                  {% if loop.first %}disabled{% endif %}>&uarr;</button>
+        </form>
+
+        <!-- Down -->
+        <form method="POST" action="{{ url_for('admin.move_question', q_id=q.id, direction='down') }}">
+          <button class="btn btn-sm btn-outline-secondary"
+                  {% if loop.last %}disabled{% endif %}>&darr;</button>
+        </form>
+
+        <!-- Edit -->
+        <a href="{{ url_for('admin.edit_question', q_id=q.id) }}"
+           class="btn btn-sm btn-outline-secondary">Edit</a>
+
+        <!-- Delete -->
+        <form action="{{ url_for('admin.delete_question', q_id=q.id) }}"
+              method="POST" onsubmit="return confirm('Delete this question?');">
+          <button class="btn btn-sm btn-outline-danger">Delete</button>
+        </form>
+      </span>
+    </li>
+  {% else %}
+    <li class="list-group-item fst-italic text-muted">
+      No question yet – add one above.
+    </li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

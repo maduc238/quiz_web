@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>{{ "New User" if is_new else "Edit User" }}</h3>
+
+<form method="POST" class="w-50">
+
+  <div class="mb-3">
+    <label class="form-label">Username</label>
+    <input class="form-control" name="username"
+           value="{{ user.username or '' }}" required>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Password
+      {% if not is_new %}<small class="text-muted">(leave blank to keep)</small>{% endif %}
+    </label>
+    <input class="form-control" name="password" type="text">
+  </div>
+
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" name="is_admin"
+           id="adminChk" {% if user.is_admin %}checked{% endif %}>
+    <label class="form-check-label" for="adminChk">Admin privileges</label>
+  </div>
+
+  <button class="btn btn-success">Save</button>
+  <a class="btn btn-secondary ms-2"
+     href="{{ url_for('admin.list_users') }}">Cancel</a>
+</form>
+{% endblock %}

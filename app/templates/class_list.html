@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Classrooms</h3>
+
+<a href="{{ url_for('admin.edit_class', cid=0) }}" class="btn btn-primary mb-3">
+  <i class="bi bi-plus-circle"></i> New Class
+</a>
+
+<table class="table table-striped">
+  <thead><tr><th>#</th><th>Name</th><th>Students</th><th></th></tr></thead>
+  <tbody>
+    {% for c in classes %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ c.name }}</td>
+        <td>{{ c.students|length }}</td>
+        <td>
+          <a href="{{ url_for('admin.edit_class', cid=c.id) }}"
+             class="btn btn-sm btn-outline-secondary me-2">Edit</a>
+          <form action="{{ url_for('admin.delete_class', cid=c.id) }}"
+                method="POST" class="d-inline"
+                onsubmit="return confirm('Delete class?');">
+            <button class="btn btn-sm btn-outline-danger">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back</a>
+{% endblock %}

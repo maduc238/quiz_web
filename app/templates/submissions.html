@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Submissions – {{ exam.title }}</h3>
+
+{% macro sort_link(label, field) %}
+  {# xác định chiều sort kế tiếp #}
+  {% set next_dir = "asc" if sort != field or dir == "desc" else "desc" %}
+  <a href="{{ url_for('admin.view_submissions',
+                      exam_id=exam.id, sort=field, dir=next_dir) }}"
+     class="text-decoration-none text-white">
+    {{ label }}
+    {% if sort == field %}
+      <i class="bi bi-caret-down-fill" style="font-size:.7rem"
+         {% if dir == "asc" %}style="transform:rotate(180deg)"{% endif %}></i>
+    {% endif %}
+  </a>
+{% endmacro %}
+
+<table class="table table-hover">
+  <thead class="table-dark">
+    <tr>
+      <th>#</th>
+      <th>User</th>
+      <th>{{ sort_link("Score",   "score") }}</th>
+      <th>{{ sort_link("Started", "start_time") }}</th>
+      <th>{{ sort_link("Ended",   "end_time") }}</th>
+      <th>{{ sort_link("Time used","elapsed") }}</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for s in subs %}
+    {% set used = (s.end_time - s.start_time).seconds %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ s.user.username }}</td>
+      <td>{{ s.score }}</td>
+      <td>{{ s.start_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+      <td>{{ s.end_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+      <td>{{ used//60 }}m {{ used%60 }}s</td>
+      <td>
+        <a href="{{ url_for('admin.view_submission', sub_id=s.id) }}"
+           class="btn btn-sm btn-outline-primary me-1">View</a>
+        <form action="{{ url_for('admin.delete_submission', sub_id=s.id) }}"
+              method="POST" class="d-inline"
+              onsubmit="return confirm('Delete this record?');">
+          <button class="btn btn-sm btn-outline-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back</a>
+{% endblock %}

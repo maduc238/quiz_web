@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>User Management</h3>
+
+<a href="{{ url_for('admin.edit_user', uid=0) }}"
+   class="btn btn-primary mb-3">
+  <i class="bi bi-person-plus"></i> New User
+</a>
+
+<table class="table table-striped align-middle">
+  <thead class="table-dark">
+    <tr><th>#</th><th>Username</th><th>Role</th><th></th></tr>
+  </thead>
+  <tbody>
+  {% for u in users %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ u.username }}</td>
+      <td>{{ 'Admin' if u.is_admin else 'Student' }}</td>
+      <td>
+        <a href="{{ url_for('admin.edit_user', uid=u.id) }}"
+           class="btn btn-sm btn-outline-secondary me-2">Edit</a>
+
+        {% if u.id != current_user.id %}
+          <form action="{{ url_for('admin.delete_user', uid=u.id) }}"
+                method="POST" class="d-inline"
+                onsubmit="return confirm('Delete this account?');">
+            <button class="btn btn-sm btn-outline-danger">Delete</button>
+          </form>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back</a>
+{% endblock %}

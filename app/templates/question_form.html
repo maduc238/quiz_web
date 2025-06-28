@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Edit Question (Exam: {{ q.exam.title }})</h3>
+
+<form method="POST" enctype="multipart/form-data">
+
+  <!-- -------- Question -------- -->
+  <div class="mb-3">
+    <label class="form-label">Question text</label>
+    <textarea class="form-control" name="question_text">{{ q.text }}</textarea>
+
+    {% if q.image_path %}
+      <div class="mt-2">
+        <img src="{{ url_for('static', filename=q.image_path) }}" style="max-height:120px">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox"
+                 name="remove_q_image" id="rm_q_img">
+          <label class="form-check-label" for="rm_q_img">Remove image</label>
+        </div>
+      </div>
+    {% endif %}
+    <input class="form-control mt-2" type="file" name="question_image" accept="image/*">
+  </div>
+
+  <!-- -------- Options -------- -->
+  {% for opt in q.options|sort(attribute='id') %}
+    <div class="mb-3">
+      <label class="form-label">Option {{ loop.index }}</label>
+      <input class="form-control mb-1" type="text"
+             name="option_{{ loop.index }}" value="{{ opt.text }}">
+
+      {% if opt.image_path %}
+        <div class="mb-1">
+          <img src="{{ url_for('static', filename=opt.image_path) }}" style="max-height:80px">
+          <div class="form-check d-inline-block ms-2">
+            <input class="form-check-input" type="checkbox"
+                   name="remove_option_{{ loop.index }}_img"
+                   id="rm_opt{{ loop.index }}">
+            <label class="form-check-label" for="rm_opt{{ loop.index }}">Remove</label>
+          </div>
+        </div>
+      {% endif %}
+      <input class="form-control" type="file"
+             name="option_{{ loop.index }}_image" accept="image/*">
+    </div>
+  {% endfor %}
+
+  <!-- -------- Correct answer -------- -->
+  <div class="mb-3">
+    <label class="form-label">Correct option</label><br>
+    {% for opt in q.options|sort(attribute='id') %}
+      <input class="form-check-input" type="radio" name="correct"
+             value="{{ loop.index }}"
+             {% if opt.is_correct %}checked{% endif %}> {{ loop.index }}&nbsp;
+    {% endfor %}
+  </div>
+
+  <button class="btn btn-success">Save</button>
+  <a class="btn btn-secondary ms-2"
+     href="{{ url_for('admin.edit_exam', exam_id=q.exam.id) }}">Cancel</a>
+</form>
+{% endblock %}

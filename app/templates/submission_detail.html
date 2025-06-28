@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Submission detail – {{ sub.user.username }} / {{ sub.exam.title }}</h3>
+<p>
+  Score: <strong>{{ sub.score }}</strong><br>
+  Started: {{ sub.start_time }}<br>
+  Ended: {{ sub.end_time }}
+</p>
+
+<table class="table table-bordered">
+  <thead>
+    <tr><th>#</th><th>Question</th><th>Your answer</th><th>Correct?</th></tr>
+  </thead>
+  <tbody>
+  {% for a in answers %}
+    <tr class="{% if a.is_correct %}table-success{% else %}table-danger{% endif %}">
+      <td>{{ loop.index }}</td>
+      <td>
+        {{ a.question.text }}
+        {% if a.question.image_path %}
+          <br><img src="{{ url_for('static', filename=a.question.image_path) }}"
+                   style="max-height:80px">
+        {% endif %}
+      </td>
+      <td>
+        {% if a.selected %}
+          {{ a.selected.text }}
+          {% if a.selected.image_path %}
+            <br><img src="{{ url_for('static', filename=a.selected.image_path) }}"
+                     style="max-height:80px">
+          {% endif %}
+        {% else %}
+          <span class="text-muted">— not answered —</span>
+        {% endif %}
+      </td>
+      <td>{{ "✓" if a.is_correct else "✗" }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<a class="btn btn-secondary" href="{{ url_for('admin.view_submissions',
+                                              exam_id=sub.exam.id) }}">Back</a>
+{% endblock %}
